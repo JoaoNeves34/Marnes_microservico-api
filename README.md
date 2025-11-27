@@ -28,9 +28,3 @@ A API está funcional e acessível publicamente através do link abaixo:
 **Como foi feito:**
 A aplicação foi conteinerizada (Docker) e o deploy realizado na plataforma **Render**, conectada a um banco de dados **PostgreSQL**. As credenciais sensíveis foram configuradas via Variáveis de Ambiente.
 
-## 🔧 Como Executar Localmente
-
-### Pré-requisitos
-* Java JDK 17
-* Maven
-* Git
