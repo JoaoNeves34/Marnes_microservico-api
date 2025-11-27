@@ -1,82 +1,36 @@
-# microservico-api — mudanças implementadas
+# 🪵 Sistema de Cadastramento de Madeiras (API RESTful)
 
-Resumo das alterações que implementei a pedido:
+## 📌 Sobre o Projeto
+Este projeto é um microserviço desenvolvido para a disciplina de [Nome da Matéria]. O objetivo é gerenciar um catálogo de madeiras, permitindo operações de cadastro, consulta, atualização e remoção, aplicando conceitos de POO e arquitetura em camadas.
 
-- Adicionei a arquitetura em camadas sob o package base `br.com.joaoneves.marnes.microservico_api`:
-  - model: `Madeira` (entidade JPA)
-  - dto: `MadeiraRequestDTO`, `MadeiraResponseDTO`
-  - repository: `MadeiraRepository` (extends JpaRepository)
-  - service: `MadeiraService` (lógica de negócio)
-  - controller: `MadeiraController` (6 rotas REST: POST, GET all, GET by id, PUT, DELETE, GET by tipo)
-  - exception: `GlobalExceptionHandler` (tratamento global de erros / validação)
+A aplicação foi implantada na nuvem e conta com documentação automática via Swagger.
 
-- Profiles de configuração adicionados em `src/main/resources`:
-  - `application.properties` (ativa `h2` por padrão)
-  - `application-h2.properties` (configuração para H2 em memória — dev/testes)
-  - `application-mysql.properties` (configuração para MySQL — deploy)
-  - `application-prod.properties` (configuração para produção usando variáveis de ambiente)
+## 🚀 Tecnologias Utilizadas
+* **Java 17** com **Spring Boot 3+**
+* **Spring Data JPA** (Persistência de dados)
+* **H2 Database** (Ambiente de Desenvolvimento)
+* **PostgreSQL** (Ambiente de Produção)
+* **Springdoc OpenAPI** (Documentação Swagger)
+* **JUnit 5 & Mockito** (Testes Unitários)
+* **JaCoCo** (Relatórios de cobertura de testes)
+* **Docker & Render** (Deploy)
 
-- Atualizei `pom.xml` para corrigir erros de sintaxe e manter dependências de runtime para H2 e MySQL.
+## ⚙️ Funcionalidades
+* **CRUD Completo:** Criar, Ler, Atualizar e Deletar tipos de madeira.
+* **Filtros de Busca:** Consultar madeiras por atributos específicos (ex: densidade ou origem).
+* **Validação de Dados:** Garantia de integridade nas entradas da API.
+* **Tratamento de Erros:** Respostas padronizadas para exceções.
 
-Observações importantes e próximos passos:
+## ☁️ Deploy em Produção
+A API está funcional e acessível publicamente através do link abaixo:
+> **🔗 URL da API:** [COLOQUE O LINK DO SEU DEPLOY AQUI, EX: https://api-madeiras.onrender.com]
 
-- Os testes automatizados (unitários + integração) foram adicionados para `Madeira` e estão passando no ambiente com JDK configurado.
-- Para executar os testes e verificar o projeto localmente, no seu ambiente com JDK 17 instalado, rode:
+**Como foi feito:**
+A aplicação foi conteinerizada (Docker) e o deploy realizado na plataforma **Render**, conectada a um banco de dados **PostgreSQL**. As credenciais sensíveis foram configuradas via Variáveis de Ambiente.
 
-```powershell
-cd c:\Projetos\Marnes_microservico-api-main
-.\mvnw.cmd test
-```
+## 🔧 Como Executar Localmente
 
-# acessar: http://localhost:8080
- Quer que eu adicione testes automáticos para as camadas recém-criadas agora? (Se sim, me diga se prefere JUnit + Mockito, ou testes de integração com @SpringBootTest/H2.)
-
- ---
-
- ## API — Endpoints (Madeira)
-
- Base path: /madeiras
-
- - POST /madeiras — cria uma madeira
-   - Exemplo cURL:
-     ```bash
-     curl -X POST http://localhost:8080/madeiras \
-       -H 'Content-Type: application/json' \
-       -d '{"tipo":"Pinus Tratado","origem":"Madeireira Sul","codigoReferencia":"MAD-2025-01","precoMetroCubico":129.9}'
-     ```
-
- - GET /madeiras — lista todas
-   - Exemplo:
-     ```bash
-     curl http://localhost:8080/madeiras
-     ```
-
- - GET /madeiras/{id} — busca por id
-
- - PUT /madeiras/{id} — atualiza
-
- - DELETE /madeiras/{id} — remove
-
- - GET /madeiras/tipo/{nomeTipo} — busca por tipo (filtro, case-insensitive)
-
- ## Variáveis de ambiente para produção
-
- Ao usar `application-prod.properties` (profile prod) configure as variáveis abaixo no painel do seu provedor:
-
- - DB_URL (ex: jdbc:mysql://host:3306/biblioteca_db)
- - DB_USER
- - DB_PASSWORD
-```
-
--- Para usar o profile MySQL (deploy), execute com o profile mysql e configure credenciais corretamente no `application-mysql.properties` ou com variáveis de ambiente. Para produção recomendo `application-prod.properties` com variáveis de ambiente (DB_URL, DB_USER, DB_PASSWORD):
-
-```powershell
-.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=mysql
-```
-
-Se quiser, eu posso seguir agora com:
-- adicionar testes unitários e/ou de integração para `LivroService` e `LivroController` (recomendado),
-- criar exemplo de dados iniciais (data.sql) ou testes automatizados, ou
-- ajustar outros requisitos que você definir.
-
-Quer que eu adicione testes automáticos para as camadas recém-criadas agora? (Se sim, me diga se prefere JUnit + Mockito, ou testes de integração com @SpringBootTest/H2.)
+### Pré-requisitos
+* Java JDK 17
+* Maven
+* Git
