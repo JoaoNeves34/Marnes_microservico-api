@@ -1,73 +1,101 @@
 package br.com.joaoneves.marnes.microservico_api.service;
 
-import br.com.joaoneves.marnes.microservico_api.dto.MadeiraRequestDTO;
-import br.com.joaoneves.marnes.microservico_api.dto.MadeiraResponseDTO;
+import br.com.joaoneves.marnes.microservico_api.dto.MadeiraDTO;
+import br.com.joaoneves.marnes.microservico_api.model.Categoria;
 import br.com.joaoneves.marnes.microservico_api.model.Madeira;
+import br.com.joaoneves.marnes.microservico_api.repository.CategoriaRepository;
 import br.com.joaoneves.marnes.microservico_api.repository.MadeiraRepository;
-import br.com.joaoneves.marnes.microservico_api.repository.FornecedorRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class MadeiraService {
 
-    private final MadeiraRepository repository;
-    private final FornecedorRepository fornecedorRepository;
+    private final MadeiraRepository madeiraRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public MadeiraService(MadeiraRepository repository, FornecedorRepository fornecedorRepository) {
-        this.repository = repository;
-        this.fornecedorRepository = fornecedorRepository;
+    public MadeiraService(MadeiraRepository madeiraRepository, CategoriaRepository categoriaRepository) {
+        this.madeiraRepository = madeiraRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
-    public List<MadeiraResponseDTO> listarTodas() {
-        return repository.findAll().stream().map(MadeiraResponseDTO::new).collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public List<MadeiraDTO> listarTodas() {
+        return madeiraRepository.findAll().stream()
+                .map(this::converterParaDTO)
+                .collect(Collectors.toList());
     }
 
-    public MadeiraResponseDTO buscarPorId(Long id) {
-        Madeira madeira = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Madeira não encontrada"));
-        return new MadeiraResponseDTO(madeira);
+    @Transactional(readOnly = true)
+    public MadeiraDTO buscarPorId(Long id) {
+        Madeira madeira = madeiraRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Madeira não encontrada com id: " + id));
+        return converterParaDTO(madeira);
     }
 
-    public MadeiraResponseDTO salvar(MadeiraRequestDTO dto) {
-        var fornecedor = fornecedorRepository.findById(dto.getFornecedorId()).orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Fornecedor não encontrado"));
+    @Transactional
+    public MadeiraDTO criar(MadeiraDTO dto) {
+        Categoria categoria = categoriaRepository.findById(dto.categoriaId())
+                .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada com id: " + dto.categoriaId()));
+
         Madeira madeira = new Madeira();
-        madeira.setTipo(dto.getTipo());
-        madeira.setFornecedor(fornecedor);
-        madeira.setCodigoReferencia(dto.getCodigoReferencia());
-        madeira.setPrecoMetroCubico(dto.getPrecoMetroCubico());
-
-        repository.save(madeira);
-        return new MadeiraResponseDTO(madeira);
+        atualizarDadosEntidade(madeira, dto, categoria);
+        madeira = madeiraRepository.save(madeira);
+        return converterParaDTO(madeira);
     }
 
-    public MadeiraResponseDTO atualizar(Long id, MadeiraRequestDTO dto) {
-        Madeira madeira = repository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Madeira não encontrada"));
-        // keep current fornecedor association unless caller explicitly changes fornecedor separately
-        madeira.setTipo(dto.getTipo());
-        // if passed a different fornecedor id, update association
-        if (dto.getFornecedorId() != null) {
-            var f = fornecedorRepository.findById(dto.getFornecedorId()).orElseThrow(() -> new EntityNotFoundException("Fornecedor não encontrado"));
-            madeira.setFornecedor(f);
-        }
-        madeira.setPrecoMetroCubico(dto.getPrecoMetroCubico());
+    @Transactional
+    public MadeiraDTO atualizar(Long id, MadeiraDTO dto) {
+        Madeira madeira = madeiraRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Madeira não encontrada com id: " + id));
+        
+        Categoria categoria = categoriaRepository.findById(dto.categoriaId())
+                .orElseThrow(() -> new EntityNotFoundException("Categoria não encontrada com id: " + dto.categoriaId()));
 
-        repository.save(madeira);
-        return new MadeiraResponseDTO(madeira);
+        atualizarDadosEntidade(madeira, dto, categoria);
+        madeira = madeiraRepository.save(madeira);
+        return converterParaDTO(madeira);
     }
 
+    @Transactional
     public void deletar(Long id) {
-        if (!repository.existsById(id)) {
-            throw new EntityNotFoundException("Madeira não encontrada");
+        if (!madeiraRepository.existsById(id)) {
+            throw new EntityNotFoundException("Madeira não encontrada com id: " + id);
         }
-        repository.deleteById(id);
+        madeiraRepository.deleteById(id);
     }
 
-    public List<MadeiraResponseDTO> buscarPorTipo(String tipo) {
-        return repository.findByTipoContainingIgnoreCase(tipo).stream().map(MadeiraResponseDTO::new).collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public List<MadeiraDTO> listarPorCategoria(Long categoriaId) {
+        if (!categoriaRepository.existsById(categoriaId)) {
+            throw new EntityNotFoundException("Categoria não encontrada com id: " + categoriaId);
+        }
+        return madeiraRepository.findByCategoriaId(categoriaId).stream()
+                .map(this::converterParaDTO)
+                .collect(Collectors.toList());
+    }
+
+    private void atualizarDadosEntidade(Madeira madeira, MadeiraDTO dto, Categoria categoria) {
+        madeira.setNome(dto.nome());
+        madeira.setOrigem(dto.origem());
+        madeira.setDensidade(dto.densidade());
+        madeira.setResistencia(dto.resistencia());
+        madeira.setCor(dto.cor());
+        madeira.setCategoria(categoria);
+    }
+
+    private MadeiraDTO converterParaDTO(Madeira madeira) {
+        return new MadeiraDTO(
+                madeira.getId(),
+                madeira.getNome(),
+                madeira.getOrigem(),
+                madeira.getDensidade(),
+                madeira.getResistencia(),
+                madeira.getCor(),
+                madeira.getCategoria().getId()
+        );
     }
 }

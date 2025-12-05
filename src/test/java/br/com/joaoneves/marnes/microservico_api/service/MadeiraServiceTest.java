@@ -1,153 +1,139 @@
 package br.com.joaoneves.marnes.microservico_api.service;
 
-import br.com.joaoneves.marnes.microservico_api.dto.MadeiraRequestDTO;
-import br.com.joaoneves.marnes.microservico_api.dto.MadeiraResponseDTO;
+import br.com.joaoneves.marnes.microservico_api.dto.MadeiraDTO;
+import br.com.joaoneves.marnes.microservico_api.model.Categoria;
 import br.com.joaoneves.marnes.microservico_api.model.Madeira;
-import br.com.joaoneves.marnes.microservico_api.model.Fornecedor;
+import br.com.joaoneves.marnes.microservico_api.repository.CategoriaRepository;
 import br.com.joaoneves.marnes.microservico_api.repository.MadeiraRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class MadeiraServiceTest {
 
     @Mock
-    private MadeiraRepository repository;
+    private MadeiraRepository madeiraRepository;
 
     @Mock
-    private br.com.joaoneves.marnes.microservico_api.repository.FornecedorRepository fornecedorRepository;
+    private CategoriaRepository categoriaRepository;
 
-    private MadeiraService service;
+    @InjectMocks
+    private MadeiraService madeiraService;
+
+    private Madeira madeira;
+    private Categoria categoria;
+    private MadeiraDTO madeiraDTO;
 
     @BeforeEach
     void setup() {
-        MockitoAnnotations.openMocks(this);
-        service = new MadeiraService(repository, fornecedorRepository);
+        categoria = new Categoria(1L, "Natural");
+        madeira = new Madeira(1L, "Ipê", "Brasil", "Alta", "Alta", "Marrom", categoria);
+        madeiraDTO = new MadeiraDTO(1L, "Ipê", "Brasil", "Alta", "Alta", "Marrom", 1L);
     }
 
     @Test
-    void listarTodas_deveRetornarListaVaziaQuandoNaoExistir() {
-        when(repository.findAll()).thenReturn(List.of());
-
-        List<MadeiraResponseDTO> result = service.listarTodas();
-
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
+    @DisplayName("Deve listar todas as madeiras com sucesso")
+    void listarTodas_CenarioSucesso() {
+        when(madeiraRepository.findAll()).thenReturn(List.of(madeira));
+        List<MadeiraDTO> resultado = madeiraService.listarTodas();
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
     }
 
     @Test
-    void salvar_deveCriarMadeiraERetornarResponse() {
-        MadeiraRequestDTO dto = new MadeiraRequestDTO();
-        dto.setTipo("Mogno");
-        dto.setFornecedorId(1L);
-        dto.setCodigoReferencia("MAD-2024-001");
-        dto.setPrecoMetroCubico(new BigDecimal("199.90"));
-
-        // mock fornecedor lookup
-        when(fornecedorRepository.findById(1L)).thenReturn(Optional.of(new Fornecedor(1L, "Madeireira Sul", "ct", "end")));
-
-        // fornecedor must exist for salvar() to succeed
-        when(fornecedorRepository.findById(1L)).thenReturn(Optional.of(new Fornecedor(1L, "Fornecedor Test", "contato", "endereco")));
-
-        // mock fornecedor lookup
-        Fornecedor fornecedor = new Fornecedor(1L, "Fornecedor Test", "cont", "end");
-        when(fornecedorRepository.findById(1L)).thenReturn(Optional.of(fornecedor));
-
-        doAnswer(invocation -> {
-            Madeira arg = invocation.getArgument(0);
-            arg.setId(1L);
-            return arg;
-        }).when(repository).save(any(Madeira.class));
-
-        MadeiraResponseDTO resp = service.salvar(dto);
-
-        assertNotNull(resp);
-        assertEquals(1L, resp.getId());
-        assertEquals("Mogno", resp.getTipo());
-        verify(repository).save(any(Madeira.class));
+    @DisplayName("Deve buscar madeira por ID com sucesso")
+    void buscarPorId_CenarioSucesso() {
+        when(madeiraRepository.findById(1L)).thenReturn(Optional.of(madeira));
+        MadeiraDTO resultado = madeiraService.buscarPorId(1L);
+        assertNotNull(resultado);
     }
 
     @Test
-    void buscarPorId_quandoExistirRetornaDTO() {
-        Fornecedor f = new Fornecedor(1L, "Fornecedor X", "contato", "endereco");
-        Madeira madeira = new Madeira(1L, "Pinus", f, "MAD-01", new BigDecimal("50"));
-        when(repository.findById(1L)).thenReturn(Optional.of(madeira));
-
-        MadeiraResponseDTO dto = service.buscarPorId(1L);
-
-        assertNotNull(dto);
-        assertEquals(1L, dto.getId());
+    @DisplayName("Deve lançar erro ao buscar ID inexistente")
+    void buscarPorId_CenarioErro() {
+        when(madeiraRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> madeiraService.buscarPorId(99L));
     }
 
     @Test
-    void buscarPorId_quandoNaoExistir_deveLancarEntityNotFound() {
-        when(repository.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> service.buscarPorId(99L));
+    @DisplayName("Deve criar madeira com sucesso")
+    void criar_CenarioSucesso() {
+        when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+        when(madeiraRepository.save(any(Madeira.class))).thenReturn(madeira);
+        MadeiraDTO resultado = madeiraService.criar(madeiraDTO);
+        assertNotNull(resultado);
+        verify(madeiraRepository, times(1)).save(any(Madeira.class));
     }
 
     @Test
-    void atualizar_quandoNaoExistir_deveLancarEntityNotFound() {
-        MadeiraRequestDTO dto = new MadeiraRequestDTO();
-        dto.setTipo("X"); dto.setFornecedorId(2L); dto.setCodigoReferencia("Z"); dto.setPrecoMetroCubico(new BigDecimal("1"));
-
-        when(repository.findById(5L)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> service.atualizar(5L, dto));
+    @DisplayName("Deve lançar erro ao criar madeira com Categoria inexistente")
+    void criar_CenarioErroCategoria() {
+        when(categoriaRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> madeiraService.criar(madeiraDTO));
+        verify(madeiraRepository, never()).save(any());
     }
 
     @Test
-    void atualizar_quandoExistir_deveAtualizarEDevolver() {
-        Fornecedor oldF = new Fornecedor(1L, "Old", "c", "e");
-        Madeira existing = new Madeira(10L, "Tipo", oldF, "REF1", new BigDecimal("100"));
-        when(repository.findById(10L)).thenReturn(Optional.of(existing));
-
-        // change fornecedor
-        Fornecedor newF = new Fornecedor(2L, "NewF", "c","e");
-        when(fornecedorRepository.findById(2L)).thenReturn(Optional.of(newF));
-
-        MadeiraRequestDTO dto = new MadeiraRequestDTO();
-        dto.setTipo("TipoNew"); dto.setFornecedorId(2L); dto.setCodigoReferencia("REF1"); dto.setPrecoMetroCubico(new BigDecimal("120"));
-
-        doAnswer(invocation -> invocation.getArgument(0)).when(repository).save(any(Madeira.class));
-
-        var resp = service.atualizar(10L, dto);
-        assertEquals(10L, resp.getId());
-        assertEquals("TipoNew", resp.getTipo());
+    @DisplayName("Deve atualizar madeira com sucesso")
+    void atualizar_CenarioSucesso() {
+        when(madeiraRepository.findById(1L)).thenReturn(Optional.of(madeira));
+        when(categoriaRepository.findById(1L)).thenReturn(Optional.of(categoria));
+        when(madeiraRepository.save(any(Madeira.class))).thenReturn(madeira);
+        MadeiraDTO resultado = madeiraService.atualizar(1L, madeiraDTO);
+        assertEquals("Ipê", resultado.nome());
+    }
+    
+    @Test
+    @DisplayName("Deve lançar erro ao atualizar madeira inexistente")
+    void atualizar_CenarioErroMadeiraNaoExiste() {
+        when(madeiraRepository.findById(99L)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> madeiraService.atualizar(99L, madeiraDTO));
+        verify(madeiraRepository, never()).save(any());
+    }
+    
+    @Test
+    @DisplayName("Deve deletar madeira com sucesso")
+    void deletar_CenarioSucesso() {
+        when(madeiraRepository.existsById(1L)).thenReturn(true);
+        madeiraService.deletar(1L);
+        verify(madeiraRepository, times(1)).deleteById(1L);
     }
 
     @Test
-    void deletar_quandoNaoExistir_deveLancarEntityNotFound() {
-        when(repository.existsById(10L)).thenReturn(false);
-
-        assertThrows(EntityNotFoundException.class, () -> service.deletar(10L));
+    @DisplayName("Deve lançar erro ao deletar ID inexistente")
+    void deletar_CenarioErro() {
+        when(madeiraRepository.existsById(99L)).thenReturn(false);
+        assertThrows(EntityNotFoundException.class, () -> madeiraService.deletar(99L));
+        verify(madeiraRepository, never()).deleteById(anyLong());
     }
 
     @Test
-    void deletar_quandoExistir_deveRemover() {
-        when(repository.existsById(20L)).thenReturn(true);
-        // should not throw
-        service.deletar(20L);
+    @DisplayName("Deve filtrar madeiras por categoria (Rota GET /filtro)")
+    void filtrarPorCategoria_CenarioSucesso() {
+        when(categoriaRepository.existsById(1L)).thenReturn(true);
+        when(madeiraRepository.findByCategoriaId(1L)).thenReturn(List.of(madeira));
+        List<MadeiraDTO> resultado = madeiraService.listarPorCategoria(1L);
+        assertFalse(resultado.isEmpty());
     }
 
     @Test
-    void buscarPorTipo_deveDelegarParaRepository() {
-        Fornecedor f2 = new Fornecedor(3L, "Fornecedor A", "ct", "ed");
-        Madeira madeira = new Madeira(2L, "Carvalho", f2, "MAD-002", new BigDecimal("300"));
-        when(repository.findByTipoContainingIgnoreCase("Carvalho")).thenReturn(List.of(madeira));
-
-        List<MadeiraResponseDTO> list = service.buscarPorTipo("Carvalho");
-
-        assertEquals(1, list.size());
-        assertEquals("Carvalho", list.get(0).getTipo());
+    @DisplayName("Deve lançar erro ao filtrar por Categoria inexistente")
+    void filtrarPorCategoria_CenarioErroCategoria() {
+        when(categoriaRepository.existsById(99L)).thenReturn(false);
+        assertThrows(EntityNotFoundException.class, () -> madeiraService.listarPorCategoria(99L));
+        verify(madeiraRepository, never()).findByCategoriaId(anyLong());
     }
 }

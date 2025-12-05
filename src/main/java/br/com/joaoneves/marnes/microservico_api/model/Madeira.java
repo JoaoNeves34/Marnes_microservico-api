@@ -1,7 +1,6 @@
 package br.com.joaoneves.marnes.microservico_api.model;
 
 import jakarta.persistence.*;
-import java.math.BigDecimal;
 
 @Entity
 @Table(name = "tb_madeiras")
@@ -11,42 +10,45 @@ public class Madeira {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String tipo;
+    @Column(nullable = false, length = 50)
+    private String nome;
+    @Column(nullable = false, length = 50)
+    private String origem;
+    @Column(nullable = false, length = 30)
+    private String densidade;
+    @Column(nullable = false, length = 50)
+    private String resistencia;
+    @Column(nullable = false, length = 30)
+    private String cor;
 
-    // now model references Fornecedor entity instead of plain origem string
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "fornecedor_id")
-    private Fornecedor fornecedor;
-
-    @Column(nullable = false, unique = true)
-    private String codigoReferencia;
-
-    @Column(nullable = false)
-    private BigDecimal precoMetroCubico;
+    @ManyToOne
+    @JoinColumn(name = "categoria_id", nullable = false)
+    private Categoria categoria;
 
     public Madeira() {}
-
-    public Madeira(Long id, String tipo, Fornecedor fornecedor, String codigoReferencia, BigDecimal precoMetroCubico) {
+    public Madeira(Long id, String nome, String origem, String densidade, String resistencia, String cor, Categoria categoria) {
         this.id = id;
-        this.tipo = tipo;
-        this.fornecedor = fornecedor;
-        this.codigoReferencia = codigoReferencia;
-        this.precoMetroCubico = precoMetroCubico;
+        this.nome = nome;
+        this.origem = origem;
+        this.densidade = densidade;
+        this.resistencia = resistencia;
+        this.cor = cor;
+        this.categoria = categoria;
     }
 
+    // Getters e Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
-
-    public Fornecedor getFornecedor() { return fornecedor; }
-    public void setFornecedor(Fornecedor fornecedor) { this.fornecedor = fornecedor; }
-
-    public String getCodigoReferencia() { return codigoReferencia; }
-    public void setCodigoReferencia(String codigoReferencia) { this.codigoReferencia = codigoReferencia; }
-
-    public BigDecimal getPrecoMetroCubico() { return precoMetroCubico; }
-    public void setPrecoMetroCubico(BigDecimal precoMetroCubico) { this.precoMetroCubico = precoMetroCubico; }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public String getOrigem() { return origem; }
+    public void setOrigem(String origem) { this.origem = origem; }
+    public String getDensidade() { return densidade; }
+    public void setDensidade(String densidade) { this.densidade = densidade; }
+    public String getResistencia() { return resistencia; }
+    public void setResistencia(String resistencia) { this.resistencia = resistencia; }
+    public String getCor() { return cor; }
+    public void setCor(String cor) { this.cor = cor; }
+    public Categoria getCategoria() { return categoria; }
+    public void setCategoria(Categoria categoria) { this.categoria = categoria; }
 }
