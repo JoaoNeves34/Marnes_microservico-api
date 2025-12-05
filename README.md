@@ -1,76 +1,78 @@
-<<<<<<< HEAD
-O conteúdo abaixo atende a todos os requisitos: **Propósito**, **Instruções de Execução Local (H2)**, **Exemplos de cURL**, **Divisão de Tarefas**, e a seção **Deploy em Produção** (que precisa ser completada com o link funcional).
+---
 
------
+# ✅ **README FINAL
+
+---
 
 ## 🌳 Catálogo de Madeiras API (Microserviço Spring Boot)
 
-O **Catálogo de Madeiras API** é um microserviço RESTful desenvolvido em Java com o framework **Spring Boot 3.4.0** e **Spring Data JPA**. Seu propósito é gerenciar um catálogo de materiais, permitindo cadastrar e consultar madeiras classificadas em categorias (Natural ou Processada), garantindo a persistência dos dados e a qualidade do código com testes unitários.
+O **Catálogo de Madeiras API** é um microserviço RESTful desenvolvido em Java com **Spring Boot 3.4.0**, **Spring Data JPA**, e arquitetura em camadas.
+Seu propósito é gerenciar um catálogo de materiais, permitindo cadastrar e consultar madeiras classificadas em categorias (Natural ou Processada).
+A aplicação foi implantada na nuvem e conta com documentação automática via Swagger.
 
-### I. Requisitos Técnicos e Arquitetura
+---
+
+# I. Requisitos Técnicos e Arquitetura
 
 Este projeto foi estruturado para atender aos seguintes requisitos:
 
-| Requisito | Status | Implementação |
-| :--- | :--- | :--- |
-| **Arquitetura** | ✅ | Padrão em camadas: `controller`, `service`, `repository`, `model`, `dto`. |
-| **Entidade** | ✅ | Entidade `Madeira` com relacionamento `@ManyToOne` com `Categoria`. |
-| **Rotas REST** | ✅ | 6 rotas implementadas (GET, POST, PUT, DELETE, GET/filtro). |
-| **Validações** | ✅ | Validação de entrada nos DTOs (`@NotBlank`, `@Size`) e tratamento centralizado de exceções (`@RestControllerAdvice`). |
-| **Persistência** | ✅ | Spring Data JPA com H2 (Dev) e suporte a PostgreSQL (Prod). |
-| **Testes** | ✅ | Cobertura de 90%+ com JUnit 5 e Mockito. |
-| **Documentação** | ✅ | Springdoc/Swagger interativo e este README.md completo. |
+| Requisito        | Status | Implementação                                                       |
+| :--------------- | :----- | :------------------------------------------------------------------ |
+| **Arquitetura**  | ✅      | Camadas: `controller`, `service`, `repository`, `model`, `dto`.     |
+| **Entidade**     | ✅      | Entidade `Madeira` com relacionamento `@ManyToOne` com `Categoria`. |
+| **Rotas REST**   | ✅      | 6 rotas (GET, POST, PUT, DELETE e GET com filtro).                  |
+| **Validações**   | ✅      | DTOs com annotations (`@NotBlank`, `@Size`) e exceções globais.     |
+| **Persistência** | ✅      | Spring Data JPA com H2 (dev) e PostgreSQL (prod).                   |
+| **Testes**       | ✅      | Cobertura 90%+ com JUnit 5 e Mockito.                               |
+| **Documentação** | ✅      | Swagger/OpenAPI com interface interativa.                           |
 
------
+---
 
-### II. Instruções de Execução Local
+# II. Instruções de Execução Local
 
-Este guia utiliza o Maven Wrapper (`mvnw`) e o banco de dados em memória **H2** para facilitar a execução local.
+### Pré-requisitos
 
-#### Pré-requisitos
+* **Java 17+**
+* **Git**
 
-  * **Java 17** (ou superior)
-  * **Git**
+### 1. Instalar dependências e compilar:
 
-#### 1\. Configuração e Dependências
+```bash
+./mvnw clean install
+```
 
-As dependências do projeto são gerenciadas pelo **`pom.xml`**. O banco de dados em memória **H2** e as categorias iniciais são configurados automaticamente via `application.properties` e `import.sql`.
+### 2. Rodar a aplicação:
 
-#### 2\. Comandos de Execução
+```bash
+./mvnw spring-boot:run
+```
 
-1.  **Instalar Dependências e Compilar:**
+Servidor disponível em:
 
-    ```bash
-    ./mvnw clean install
-    ```
+```
+http://localhost:8080
+```
 
-2.  **Rodar a Aplicação:**
+---
 
-    ```bash
-    ./mvnw spring-boot:run
-    ```
+# III. Documentação e Exemplos (Swagger)
 
-3.  **Acesso à API:**
-    Após o *start*, o servidor estará disponível em `http://localhost:8080`.
+### 📘 Acesso Interativo
 
------
+Swagger UI:
 
-### III. Documentação e Exemplos de Uso (Swagger)
+👉 **[http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)**
 
-A API é auto-documentada usando o **Springdoc OpenAPI**.
+---
 
-#### 1\. Acesso Interativo
+### 📡 Exemplos de cURL
 
-Com o servidor rodando, acesse o **Swagger UI** para testar todas as rotas e ver a documentação detalhada:
+A base H2 inicia com categorias:
 
-👉 **[http://localhost:8080/swagger-ui/index.html](https://www.google.com/search?q=http://localhost:8080/swagger-ui/index.html)**
+* **1 – Natural**
+* **2 – Processada**
 
-#### 2\. Exemplos de Uso com cURL
-
-O banco de dados H2 é inicializado com as categorias **1 (Natural)** e **2 (Processada)**.
-
-**A. POST - Cadastrar uma nova Madeira (Requisição Completa)**
-*(Note que `categoriaId` é obrigatório e precisa ser 1 ou 2)*
+#### A. Criar nova madeira:
 
 ```bash
 curl -X POST "http://localhost:8080/api/madeiras" \
@@ -85,70 +87,65 @@ curl -X POST "http://localhost:8080/api/madeiras" \
 }'
 ```
 
-**B. GET - Listar todas as Madeiras**
+#### B. Listar todas:
 
 ```bash
 curl -X GET "http://localhost:8080/api/madeiras"
 ```
 
-**C. GET - Buscar Madeira por ID (ex: ID 1)**
+#### C. Buscar por ID:
 
 ```bash
 curl -X GET "http://localhost:8080/api/madeiras/1"
 ```
 
-**D. GET - Filtrar Madeiras por Categoria (ex: Apenas as Naturais - ID 1)**
-*(Utiliza a rota `/filtro` com parâmetro de Query)*
+#### D. Filtrar por categoria (ex: Naturais — ID 1):
 
 ```bash
 curl -X GET "http://localhost:8080/api/madeiras/filtro?categoriaId=1"
 ```
 
------
+---
 
-### IV. Testes Unitários e Cobertura (JaCoCo)
+# IV. Testes Unitários e Cobertura (JaCoCo)
 
-O projeto cumpre o requisito de **cobertura mínima de 90%** nas camadas `Service` e `Controller`, utilizando **JUnit 5** e **Mockito** para simulação de dependências.
+O projeto cumpre a cobertura mínima de **90%+** nas camadas de serviço e controller.
 
-#### Execução dos Testes
-
-Para executar os testes e gerar o relatório de cobertura:
+### Rodar testes:
 
 ```bash
 ./mvnw clean verify
 ```
 
-#### Acesso ao Relatório de Cobertura
+### Relatório HTML:
 
-Após o comando `verify`, o relatório em HTML (que prova a cobertura de 90%+) é gerado:
+Abra:
 
-👉 **Acesse o arquivo em:** `target/site/jacoco/index.html`
+```
+target/site/jacoco/index.html
+```
 
------
+---
 
-### V. Gerenciamento e Divisão de Tarefas
+# V. Gerenciamento e Divisão de Tarefas
 
-O desenvolvimento seguiu as boas práticas de **Gitflow simplificado**, utilizando branches de *feature* e integração via *Pull Requests*.
+O desenvolvimento utilizou um **Gitflow simplificado**, com branches de *feature*, *hotfix* e PRs.
 
-| Membro | Responsabilidade | Contribuição Principal (Exemplo) |
-| :--- | :--- | :--- |
-| **João Neves** | Arquitetura, Persistência de Dados (JPA), Camada Service e Deploy. | Implementação dos modelos `Madeira` e `Categoria`, lógica CRUD, e configuração de perfis (H2/Prod). |
-| *[Membro B (Se Houver)]* | Testes Unitários e Qualidade de Código (JaCoCo). | Escrita de todos os testes de `Service` e `Controller`. |
-| *[Membro C (Se Houver)]* | API RESTful e Documentação. | Criação dos `Controllers` e dos DTOs com validações, escrita do README.md e configuração do Swagger. |
+| Membro         | Responsabilidade                           | Contribuição                            |
+| :------------- | :----------------------------------------- | :-------------------------------------- |
+| **João Neves** | Arquitetura, Service, Persistência, Deploy | JPA Models, lógica CRUD, perfis H2/Prod |
+| *[Membro B]*   | Testes unitários                           | Testes `Service` e `Controller`         |
+| *[Membro C]*   | Controllers e Documentação                 | DTOs, validação, Swagger, README        |
 
------
+---
 
-### VI. Deploy em Produção
+# VI. Deploy em Produção
 
-#### 1\. Configuração de Variáveis de Ambiente
+### 1. Configuração das Variáveis de Ambiente (Prod)
 
-Para o ambiente de produção (usando um PaaS como Render, Heroku, etc.), os dados sensíveis são gerenciados via **Variáveis de Ambiente**, conforme o requisito de segurança.
-
-**Arquivo: `src/main/resources/application-prod.properties`**
+Arquivo **`application-prod.properties`**:
 
 ```properties
-# Ativado com: spring.profiles.active=prod
-# Configuração para PostgreSQL (Padrão de nuvem)
 spring.datasource.url=${DB_URL}
 spring.datasource.username=${DB_USERNAME}
 spring.datasource.password=${DB_PASSWORD}
@@ -158,40 +155,29 @@ spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=false
 ```
 
-#### 2\. Link Público da API https://github.com/JoaoNeves34/Marnes_microservico-api.git
+### 2. Deploy e Link Público da API
 
-| Plataforma de Deploy | Link da API | Guia de Deploy |
-| :--- | :--- | :--- |
-| Render (Exemplo) | **[AQUI VAI O SEU LINK PÚBLICO FINAL]** | Aplicação conteinerizada e implantada com a configuração de variáveis de ambiente Render para a conexão com o banco de dados PostgreSQL. |
-=======
-# 🪵 Sistema de Cadastramento de Madeiras (API RESTful)
+A aplicação foi conteinerizada com Docker e implantada no **Render**, com banco PostgreSQL e variáveis de ambiente seguras.
 
-## 📌 Sobre o Projeto
-Este projeto é um microserviço desenvolvido para a disciplina de [Nome da Matéria]. O objetivo é gerenciar um catálogo de madeiras, permitindo operações de cadastro, consulta, atualização e remoção, aplicando conceitos de POO e arquitetura em camadas.
+| Plataforma | Link da API                                    | Guia                     |
+| :--------- | :--------------------------------------------- | :----------------------- |
+| **Render** | **👉 COLOQUE AQUI O LINK FINAL DO SEU DEPLOY** | Deploy Docker + Postgres |
 
-A aplicação foi implantada na nuvem e conta com documentação automática via Swagger.
+---
 
-## 🚀 Tecnologias Utilizadas
-* **Java 17** com **Spring Boot 3+**
-* **Spring Data JPA** (Persistência de dados)
-* **H2 Database** (Ambiente de Desenvolvimento)
-* **PostgreSQL** (Ambiente de Produção)
-* **Springdoc OpenAPI** (Documentação Swagger)
-* **JUnit 5 & Mockito** (Testes Unitários)
-* **JaCoCo** (Relatórios de cobertura de testes)
-* **Docker & Render** (Deploy)
+# VII. Tecnologias Utilizadas
 
-## ⚙️ Funcionalidades
-* **CRUD Completo:** Criar, Ler, Atualizar e Deletar tipos de madeira.
-* **Filtros de Busca:** Consultar madeiras por atributos específicos (ex: densidade ou origem).
-* **Validação de Dados:** Garantia de integridade nas entradas da API.
-* **Tratamento de Erros:** Respostas padronizadas para exceções.
+* Java 17
+* Spring Boot 3+
+* Spring Data JPA
+* H2 Database
+* PostgreSQL
+* Springdoc OpenAPI (Swagger)
+* JUnit 5, Mockito, JaCoCo
+* Docker
+* Render (deploy cloud)
 
-## ☁️ Deploy em Produção
-A API está funcional e acessível publicamente através do link abaixo:
-> **🔗 URL da API:** [COLOQUE O LINK DO SEU DEPLOY AQUI, EX: https://api-madeiras.onrender.com]
+---
 
-**Como foi feito:**
-A aplicação foi conteinerizada (Docker) e o deploy realizado na plataforma **Render**, conectada a um banco de dados **PostgreSQL**. As credenciais sensíveis foram configuradas via Variáveis de Ambiente.
+# 🎉 Pronto!
 
->>>>>>> 1f5b64b4b41df079c02234032653839ee4e38294
