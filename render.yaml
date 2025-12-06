@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: marnes-microservico-api
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -Dserver.port=$PORT -Dspring.profiles.active=prod -jar target/*.jar
+    envVars:
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx512m -XX:MaxMetaspaceSize=128m
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DATABASE_URL
+        fromDatabase:
+          name: marnes-db
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: marnes-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: marnes-db
+          property: password
+
+databases:
+  - name: marnes-db
+    plan: free
+    databaseName: madeiradb
+    user: madeirauser

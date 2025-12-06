@@ -147,37 +147,172 @@ Arquivo **`application-prod.properties`**:
 
 ```properties
 spring.datasource.url=${DB_URL}
-spring.datasource.username=${DB_USERNAME}
+spring.datasource.username=${DB_USER}
 spring.datasource.password=${DB_PASSWORD}
 spring.datasource.driver-class-name=org.postgresql.Driver
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=false
+server.port=${PORT:8080}
 ```
 
 ### 2. Deploy e Link Público da API
 
-A aplicação foi conteinerizada com Docker e implantada no **Render**, com banco PostgreSQL e variáveis de ambiente seguras.
+---
 
-| Plataforma | Link da API                                    | Guia                     |
-| :--------- | :--------------------------------------------- | :----------------------- |
-| **Render** | **👉 COLOQUE AQUI O LINK FINAL DO SEU DEPLOY** | Deploy Docker + Postgres |
+## 🚀 **Guia de Deploy em Produção**
+
+### **Opção 1: Deploy no Render (Recomendado - GRÁTIS)**
+
+1. **Crie uma conta em [render.com](https://render.com)**
+
+2. **Conecte seu repositório GitHub:**
+   - Dashboard → New → Blueprint
+   - Selecione o repositório: `JoaoNeves34/Marnes_microservico-api`
+   - O Render detectará automaticamente o arquivo `render.yaml`
+
+3. **Configuração automática:**
+   - ✅ Web Service criado automaticamente
+   - ✅ PostgreSQL database criado
+   - ✅ Variáveis de ambiente configuradas
+   - ✅ Build e deploy iniciados
+
+4. **Aguarde o build (3-5 minutos)**
+
+5. **Acesse sua API:**
+   ```
+   https://marnes-microservico-api.onrender.com/api/madeiras
+   https://marnes-microservico-api.onrender.com/swagger-ui/index.html
+   ```
+
+---
+
+### **Opção 2: Deploy no Railway**
+
+1. **Acesse [railway.app](https://railway.app) e faça login com GitHub**
+
+2. **New Project → Deploy from GitHub repo**
+
+3. **Selecione o repositório e configure:**
+   ```bash
+   Build Command: ./mvnw clean package -DskipTests
+   Start Command: java -Dserver.port=$PORT -Dspring.profiles.active=prod -jar target/*.jar
+   ```
+
+4. **Adicione PostgreSQL:**
+   - New → Database → PostgreSQL
+   - Railway criará automaticamente `DATABASE_URL`
+
+5. **Defina variáveis de ambiente:**
+   ```
+   SPRING_PROFILES_ACTIVE=prod
+   PORT=8080
+   ```
+
+6. **Deploy automático ativo!**
+
+---
+
+### **Opção 3: Deploy no Heroku**
+
+1. **Instale Heroku CLI e faça login:**
+   ```bash
+   heroku login
+   ```
+
+2. **Crie aplicação e adicione PostgreSQL:**
+   ```bash
+   heroku create marnes-api
+   heroku addons:create heroku-postgresql:mini
+   ```
+
+3. **Configure variáveis:**
+   ```bash
+   heroku config:set SPRING_PROFILES_ACTIVE=prod
+   ```
+
+4. **Deploy:**
+   ```bash
+   git push heroku main
+   ```
+
+5. **Acesse:**
+   ```bash
+   heroku open
+   ```
+
+---
+
+### **Opção 4: Docker Local**
+
+1. **Build da imagem:**
+   ```bash
+   docker build -t marnes-api .
+   ```
+
+2. **Executar container:**
+   ```bash
+   docker run -p 8080:8080 \
+     -e SPRING_PROFILES_ACTIVE=prod \
+     -e DATABASE_URL=jdbc:postgresql://host.docker.internal:5432/madeiradb \
+     -e DB_USER=postgres \
+     -e DB_PASSWORD=postgres \
+     marnes-api
+   ```
+
+3. **Acesse:** `http://localhost:8080`
+
+---
+
+## 📊 **Variáveis de Ambiente Necessárias**
+
+| Variável                | Descrição                        | Exemplo                                          |
+| :---------------------- | :------------------------------- | :----------------------------------------------- |
+| `SPRING_PROFILES_ACTIVE` | Perfil ativo (prod/dev)          | `prod`                                           |
+| `DATABASE_URL`          | URL do banco PostgreSQL          | `jdbc:postgresql://host:5432/madeiradb`          |
+| `DB_USER`               | Usuário do banco                 | `postgres`                                       |
+| `DB_PASSWORD`           | Senha do banco                   | `sua-senha-segura`                               |
+| `PORT`                  | Porta do servidor (opcional)     | `8080`                                           |
+
+---
+
+## 🧪 **Testando a API em Produção**
+
+Após deploy, teste os endpoints:
+
+```bash
+# Listar categorias
+curl https://sua-api.onrender.com/api/categorias
+
+# Criar madeira
+curl -X POST https://sua-api.onrender.com/api/madeiras \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nome": "Ipê",
+    "origem": "Brasil",
+    "densidade": "1050 kg/m³",
+    "resistencia": "Alta",
+    "cor": "Marrom",
+    "categoriaId": 1
+  }'
+
+# Swagger UI
+https://sua-api.onrender.com/swagger-ui/index.html
+```
 
 ---
 
 # VII. Tecnologias Utilizadas
 
-* Java 17
-* Spring Boot 3+
-* Spring Data JPA
-* H2 Database
-* PostgreSQL
-* Springdoc OpenAPI (Swagger)
-* JUnit 5, Mockito, JaCoCo
-* Docker
-* Render (deploy cloud)
+* **Backend:** Java 17, Spring Boot 3.4.0, Spring Data JPA
+* **Banco de Dados:** H2 (desenvolvimento), PostgreSQL (produção)
+* **Documentação:** Springdoc OpenAPI 2.6.0 (Swagger)
+* **Testes:** JUnit 5, Mockito, JaCoCo (90%+ cobertura)
+* **Containerização:** Docker multi-stage build
+* **Deploy:** Render, Railway, Heroku (PaaS)
+* **Versionamento:** Git, GitHub
 
 ---
 
-# 🎉 Pronto!
+# 🎉 Projeto Completo e Pronto para Produção!
 
