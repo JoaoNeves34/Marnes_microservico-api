@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: marnes-microservico-api
-    plan: free
-    region: oregon
-    buildCommand: "./mvnw clean install -DskipTests"
-    startCommand: "java -jar target/*.jar"
