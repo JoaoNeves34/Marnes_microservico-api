@@ -1,18 +1,3 @@
-Aqui está o **README completo**, profissional, pronto para colocar no GitHub — baseado no projeto final que você enviou.
-Incluí:
-
-* descrição do sistema
-* passos para rodar localmente
-* estrutura do projeto
-* endpoints
-* tecnologias
-* **guia de deploy**, conforme você pediu
-* exemplos de arquivos necessários (Dockerfile, Procfile, Render, etc.)
-
-Você só precisa copiar e colar no seu `README.md`.
-
----
-
 # ✅ **README.md — Projeto Microserviço de Madeiras**
 
 ```markdown
