@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: marnes-microservico-api
+    env: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8080
